@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aditya Degree College - Student Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, var(--dark-color), #1a2530);
+            color: white;
+            padding: 20px 0;
+            transition: var(--transition);
+            position: relative;
+            z-index: 10;
+            box-shadow: var(--shadow);
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 10px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: var(--transition);
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed .logo {
+            width: 40px;
+            height: 40px;
+        }
+
+        .college-name {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            transition: var(--transition);
+            opacity: 1;
+        }
+
+        .sidebar.collapsed .college-name {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+        }
+
+        .menu {
+            list-style: none;
+            padding: 0 15px;
+        }
+
+        .menu-item {
+            margin-bottom: 5px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 5px;
+            transition: var(--transition);
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item.active {
+            background-color: var(--primary-color);
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: white;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .menu-icon {
+            font-size: 18px;
+            margin-right: 15px;
+            min-width: 20px;
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed .menu-icon {
+            margin-right: 0;
+            font-size: 22px;
+        }
+
+        .menu-text {
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed .menu-text {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            right: -15px;
+            top: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            z-index: 20;
+            transition: var(--transition);
+        }
+
+        .toggle-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .sidebar.collapsed .toggle-btn {
+            transform: rotate(180deg);
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            transition: var(--transition);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .page-title {
+            font-size: 24px;
+            color: var(--dark-color);
+            position: relative;
+            display: inline-block;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background-color: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-weight: 600;
+            margin-right: 15px;
+        }
+
+        .logout-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* Dashboard Cards */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background-color: var(--primary-color);
+        }
+
+        .card-icon {
+            font-size: 30px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 5px;
+        }
+
+        .card-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+
+        /* Year Selection Page */
+        .year-selection {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 50px;
+        }
+
+        .year-card {
+            background-color: white;
+            width: 200px;
+            height: 200px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .year-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .year-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .year-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .year-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+
+        /* Group Selection Page */
+        .group-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .group-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .group-card:hover {
+            transform: scale(1.03);
+        }
+
+        .group-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+        }
+
+        .group-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 10px;
+        }
+
+        .group-desc {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .group-stats {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #777;
+        }
+
+        /* Student Table Styles */
+        .student-management {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-top: 30px;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #777;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-success {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-danger {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .student-table th {
+            background-color: #f8f9fa;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark-color);
+            border-bottom: 2px solid #eee;
+        }
+
+        .student-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+
+        .student-table tr:hover {
+            background-color: #f5f7fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .action-icon {
+            font-size: 16px;
+            cursor: pointer;
+            margin: 0 5px;
+            transition: var(--transition);
+        }
+
+        .edit-icon {
+            color: var(--primary-color);
+        }
+
+        .edit-icon:hover {
+            color: #2980b9;
+        }
+
+        .delete-icon {
+            color: var(--accent-color);
+        }
+
+        .delete-icon:hover {
+            color: #c0392b;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(-50px);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #777;
+            transition: var(--transition);
+        }
+
+        .close-btn:hover {
+            color: var(--accent-color);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Payment History Styles */
+        .payment-history {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .payment-history h4 {
+            margin-bottom: 15px;
+            color: var(--dark-color);
+        }
+
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+
+        .payment-amount {
+            font-weight: 600;
+        }
+
+        .payment-date {
+            color: #777;
+            font-size: 12px;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 10px 0;
+            }
+
+            .sidebar.collapsed {
+                width: 100%;
+                height: 60px;
+            }
+
+            .sidebar.collapsed .logo-container {
+                padding: 5px;
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            .sidebar.collapsed .logo {
+                width: 30px;
+                height: 30px;
+                margin: 0;
+            }
+
+            .sidebar.collapsed .menu {
+                display: none;
+            }
+
+            .toggle-btn {
+                right: 20px;
+                top: 15px;
+            }
+
+            .main-content {
+                padding: 15px;
+            }
+
+            .year-selection {
+                gap: 15px;
+            }
+
+            .year-card {
+                width: 150px;
+                height: 150px;
+            }
+
+            .year-icon {
+                font-size: 40px;
+                margin-bottom: 15px;
+            }
+
+            .year-title {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-cards {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .group-selection {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .user-info {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .action-buttons {
+                width: 100%;
+                justify-content: space-between;
+                margin-top: 15px;
+            }
+
+            .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .year-selection {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .year-card {
+                width: 100%;
+                max-width: 250px;
+            }
+
+            .modal-content {
+                width: 95%;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.5s ease forwards;
+        }
+
+        .slide-in-up {
+            animation: slideInUp 0.5s ease forwards;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+        .delay-5 { animation-delay: 0.5s; }
+
+        /* Print Styles */
+        @media print {
+            .sidebar, .header, .action-buttons, .action-icon {
+                display: none !important;
+            }
+
+            .main-content {
+                padding: 0;
+                margin: 0;
+            }
+
+            .student-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .student-table th, .student-table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+            }
+
+            .student-table th {
+                background-color: #f2f2f2;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo-container">
+                <img src="https://github.com/Adityadegreecollege/Images-/blob/main/clgimages/WhatsApp%20Image%202025-03-26%20at%2010.15.22_718e95e5.jpg?raw=true" alt="Aditya Degree College Logo" class="logo">
+                <h2 class="college-name">Aditya Degree College</h2>
+            </div>
+            <ul class="menu">
+                <li class="menu-item active">
+                    <a href="#" class="menu-link">
+                        <i class="fas fa-home menu-icon"></i>
+                        <span class="menu-text">ADC- Fee Structure</span>
+                    </a>
+            </ul>
+            <button class="toggle-btn" id="toggleSidebar">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1 class="page-title" id="pageTitle">Aditya Degree College - Fee Structure</h1>
+                <div class="user-info">
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div id="dashboardContent">
+                <div class="dashboard-cards">
+                    <div class="card slide-in-right delay-1">
+                        <i class="fas fa-users card-icon"></i>
+                        <p class="card-title">Total Students</p>
+                        <h3 class="card-value" id="totalStudents">0</h3>
+                    </div>
+                    <div class="card slide-in-right delay-2">
+                        <i class="fas fa-rupee-sign card-icon"></i>
+                        <p class="card-title">Total Fees Collected</p>
+                        <h3 class="card-value" id="totalFeesCollected">₹0</h3>
+                    </div>
+                    <div class="card slide-in-right delay-3">
+                        <i class="fas fa-file-invoice-dollar card-icon"></i>
+                        <p class="card-title">Pending Fees</p>
+                        <h3 class="card-value" id="pendingFees">₹0</h3>
+                    </div>
+                    <div class="card slide-in-right delay-4">
+                        <i class="fas fa-percentage card-icon"></i>
+                        <p class="card-title">Payment Completion</p>
+                        <h3 class="card-value" id="paymentCompletion">0%</h3>
+                    </div>
+                </div>
+
+                <div class="year-selection">
+                    <div class="year-card fade-in delay-1" onclick="showGroups('1st Year')">
+                        <i class="fas fa-calendar-alt year-icon"></i>
+                        <h2 class="year-title">1st Year</h2>
+                    </div>
+                    <div class="year-card fade-in delay-2" onclick="showGroups('2nd Year')">
+                        <i class="fas fa-calendar-check year-icon"></i>
+                        <h2 class="year-title">2nd Year</h2>
+                    </div>
+                    <div class="year-card fade-in delay-3" onclick="showGroups('3rd Year')">
+                        <i class="fas fa-graduation-cap year-icon"></i>
+                        <h2 class="year-title">3rd Year</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Groups Content (Hidden by default) -->
+            <div id="groupsContent" style="display: none;">
+                <button class="btn btn-primary" onclick="backToDashboard()">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <h2 class="page-title" id="groupsTitle" style="margin-top: 20px;"></h2>
+                
+                <div class="group-selection">
+                    <div class="group-card slide-in-up delay-1" onclick="showStudentManagement('BCA')">
+                        <h3 class="group-name">BCA</h3>
+                        <p class="group-desc">Bachelor of Computer Applications</p>
+                        <div class="group-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="bca-students">0</div>
+                                <div class="stat-label">Students</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">₹45,000</div>
+                                <div class="stat-label">Annual Fee</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="bca-paid">0%</div>
+                                <div class="stat-label">Paid</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="group-card slide-in-up delay-2" onclick="showStudentManagement('BSC')">
+                        <h3 class="group-name">BSC</h3>
+                        <p class="group-desc">Bachelor of Science</p>
+                        <div class="group-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="bsc-students">0</div>
+                                <div class="stat-label">Students</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">₹40,000</div>
+                                <div class="stat-label">Annual Fee</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="bsc-paid">0%</div>
+                                <div class="stat-label">Paid</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="group-card slide-in-up delay-3" onclick="showStudentManagement('BCOM')">
+                        <h3 class="group-name">B.Com</h3>
+                        <p class="group-desc">Bachelor of Commerce</p>
+                        <div class="group-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="bcom-students">0</div>
+                                <div class="stat-label">Students</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">₹35,000</div>
+                                <div class="stat-label">Annual Fee</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="bcom-paid">0%</div>
+                                <div class="stat-label">Paid</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="group-card slide-in-up delay-4" onclick="showStudentManagement('BSC Chemistry')">
+                        <h3 class="group-name">BSC Chemistry</h3>
+                        <p class="group-desc">Bachelor of Science in Chemistry</p>
+                        <div class="group-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="bsc-chem-students">0</div>
+                                <div class="stat-label">Students</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">₹42,000</div>
+                                <div class="stat-label">Annual Fee</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="bsc-chem-paid">0%</div>
+                                <div class="stat-label">Paid</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Student Management Content (Hidden by default) -->
+            <div id="studentManagementContent" style="display: none;">
+                <button class="btn btn-primary" onclick="backToGroups()">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <h2 class="page-title" id="managementTitle" style="margin-top: 20px;"></h2>
+                
+                <div class="student-management">
+                    <div class="table-header">
+                        <div class="search-box">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="search-input" placeholder="Search students...">
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn btn-success" onclick="openAddStudentModal()">
+                                <i class="fas fa-plus"></i> Add Student
+                            </button>
+                            <button class="btn btn-primary" onclick="generatePDF()">
+                                <i class="fas fa-file-pdf"></i> Generate PDF
+                            </button>
+                            <button class="btn btn-danger" onclick="printTable()">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="student-table">
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>Admission No</th>
+                                    <th>Section</th>
+                                    <th>Sem</th>
+                                    <th>Total Fees</th>
+                                    <th>Paid Amount</th>
+                                    <th>Balance</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentTableBody">
+                                <!-- Student data will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div class="modal" id="addStudentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Student</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="studentForm">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">Student Name</label>
+                                <input type="text" class="form-control" id="studentName" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Admission Number</label>
+                                <input type="text" class="form-control" id="admissionNo" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Section</label>
+                                <input type="text" class="form-control" id="section" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Group</label>
+                                <input type="text" class="form-control" id="group" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Semester</label>
+                                <select class="form-control" id="semester" required>
+                                    <option value="">Select Semester</option>
+                                    <option value="1">1st Sem</option>
+                                    <option value="2">2nd Sem</option>
+                                    <option value="3">3rd Sem</option>
+                                    <option value="4">4th Sem</option>
+                                    <option value="5">5th Sem</option>
+                                    <option value="6">6th Sem</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">Address</label>
+                                <textarea class="form-control" id="address" rows="3" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Total Course Fee</label>
+                                <input type="number" class="form-control" id="totalFee" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Amount Paid</label>
+                                <input type="number" class="form-control" id="amountPaid" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Payment Date</label>
+                                <input type="date" class="form-control" id="paymentDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Receipt Number</label>
+                                <input type="text" class="form-control" id="receiptNo" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Payment Status</label>
+                        <select class="form-control" id="paymentStatus" required>
+                            <option value="success">Paid</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                    <div class="payment-history" id="paymentHistoryContainer" style="display: none;">
+                        <h4>Payment History</h4>
+                        <div id="paymentHistoryList">
+                            <!-- Payment history will be loaded here -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-success" onclick="saveStudent()">Save Student</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Student Modal -->
+    <div class="modal" id="editStudentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Student</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editStudentForm">
+                    <input type="hidden" id="editStudentId">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">Student Name</label>
+                                <input type="text" class="form-control" id="editStudentName" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Admission Number</label>
+                                <input type="text" class="form-control" id="editAdmissionNo" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Section</label>
+                                <input type="text" class="form-control" id="editSection" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Group</label>
+                                <input type="text" class="form-control" id="editGroup" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Semester</label>
+                                <select class="form-control" id="editSemester" required>
+                                    <option value="">Select Semester</option>
+                                    <option value="1">1st Sem</option>
+                                    <option value="2">2nd Sem</option>
+                                    <option value="3">3rd Sem</option>
+                                    <option value="4">4th Sem</option>
+                                    <option value="5">5th Sem</option>
+                                    <option value="6">6th Sem</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">Address</label>
+                                <textarea class="form-control" id="editAddress" rows="3" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Total Course Fee</label>
+                                <input type="number" class="form-control" id="editTotalFee" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Amount Paid</label>
+                                <input type="number" class="form-control" id="editAmountPaid" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Payment Date</label>
+                                <input type="date" class="form-control" id="editPaymentDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Receipt Number</label>
+                                <input type="text" class="form-control" id="editReceiptNo" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Payment Status</label>
+                        <select class="form-control" id="editPaymentStatus" required>
+                            <option value="success">Paid</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                    <div class="payment-history" id="editPaymentHistoryContainer">
+                        <h4>Payment History</h4>
+                        <div id="editPaymentHistoryList">
+                            <!-- Payment history will be loaded here -->
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Add Payment</label>
+                                    <input type="number" class="form-control" id="additionalPayment" placeholder="Amount">
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="additionalPaymentDate">
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label class="form-label">Receipt No</label>
+                                    <input type="text" class="form-control" id="additionalPaymentReceipt" placeholder="Receipt Number">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="addPayment()">Add Payment</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-success" onclick="updateStudent()">Update Student</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentYear = '';
+        let currentGroup = '';
+        let students = [];
+        let currentEditId = null;
+
+        // Fixed course fees
+        const courseFees = {
+            'BCA': 45000,
+            'BSC': 40000,
+            'BCOM': 35000,
+            'BSC Chemistry': 42000
+        };
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle sidebar
+            document.getElementById('toggleSidebar').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.toggle('collapsed');
+            });
+
+            // Load data from localStorage
+            loadDataFromStorage();
+            
+            // Update dashboard stats
+            updateDashboardStats();
+        });
+
+        // Load data from localStorage
+        function loadDataFromStorage() {
+            const savedStudents = localStorage.getItem('adityaCollegeStudents');
+            if (savedStudents) {
+                students = JSON.parse(savedStudents);
+            } else {
+                // Load sample data if no saved data exists
+                loadSampleData();
+            }
+        }
+
+        // Save data to localStorage
+        function saveDataToStorage() {
+            localStorage.setItem('adityaCollegeStudents', JSON.stringify(students));
+            updateDashboardStats();
+        }
+
+        // Load sample data
+        function loadSampleData() {
+            students = [
+                {
+                    id: 1,
+                    name: "Rahul Sharma",
+                    admissionNo: "ADC2023001",
+                    section: "A",
+                    group: "BCA",
+                    sem: "3",
+                    address: "123, MG Road, Vijayawada",
+                    totalFee: 45000,
+                    payments: [
+                        { amount: 15000, date: "2023-06-15", receiptNo: "REC001" },
+                        { amount: 15000, date: "2023-12-15", receiptNo: "REC002" }
+                    ],
+                    paymentStatus: "success"
+                },
+                {
+                    id: 2,
+                    name: "Priya Patel",
+                    admissionNo: "ADC2023002",
+                    section: "B",
+                    group: "BSC",
+                    sem: "2",
+                    address: "456, Gandhi Nagar, Vijayawada",
+                    totalFee: 40000,
+                    payments: [
+                        { amount: 20000, date: "2023-06-16", receiptNo: "REC003" }
+                    ],
+                    paymentStatus: "pending"
+                },
+                {
+                    id: 3,
+                    name: "Amit Singh",
+                    admissionNo: "ADC2023003",
+                    section: "C",
+                    group: "BCOM",
+                    sem: "1",
+                    address: "789, Nehru Street, Vijayawada",
+                    totalFee: 35000,
+                    payments: [
+                        { amount: 10000, date: "2023-06-17", receiptNo: "REC004" }
+                    ],
+                    paymentStatus: "pending"
+                },
+                {
+                    id: 4,
+                    name: "Neha Gupta",
+                    admissionNo: "ADC2023004",
+                    section: "A",
+                    group: "BSC Chemistry",
+                    sem: "4",
+                    address: "321, Patel Road, Vijayawada",
+                    totalFee: 42000,
+                    payments: [
+                        { amount: 21000, date: "2023-06-18", receiptNo: "REC005" },
+                        { amount: 21000, date: "2023-12-18", receiptNo: "REC006" }
+                    ],
+                    paymentStatus: "success"
+                },
+                {
+                    id: 5,
+                    name: "Vikram Reddy",
+                    admissionNo: "ADC2023005",
+                    section: "B",
+                    group: "BCA",
+                    sem: "5",
+                    address: "654, Krishna Nagar, Vijayawada",
+                    totalFee: 45000,
+                    payments: [
+                        { amount: 15000, date: "2023-06-19", receiptNo: "REC007" }
+                    ],
+                    paymentStatus: "pending"
+                }
+            ];
+            saveDataToStorage();
+        }
+
+        // Update dashboard statistics
+        function updateDashboardStats() {
+            // Total students
+            document.getElementById('totalStudents').textContent = students.length;
+            
+            // Calculate total fees collected and pending fees
+            let totalCollected = 0;
+            let totalPending = 0;
+            
+            students.forEach(student => {
+                const paidAmount = student.payments.reduce((sum, payment) => sum + payment.amount, 0);
+                totalCollected += paidAmount;
+                
+                if (student.paymentStatus === 'pending') {
+                    totalPending += (student.totalFee - paidAmount);
+                }
+            });
+            
+            document.getElementById('totalFeesCollected').textContent = '₹' + totalCollected.toLocaleString();
+            document.getElementById('pendingFees').textContent = '₹' + totalPending.toLocaleString();
+            
+            // Payment completion percentage
+            const totalPossibleFees = students.reduce((sum, student) => sum + student.totalFee, 0);
+            const completionPercentage = totalPossibleFees > 0 ? Math.round((totalCollected / totalPossibleFees) * 100) : 0;
+            document.getElementById('paymentCompletion').textContent = completionPercentage + '%';
+            
+            // Update group statistics
+            updateGroupStats();
+        }
+
+        // Update group statistics
+        function updateGroupStats() {
+            const groups = ['BCA', 'BSC', 'BCOM', 'BSC Chemistry'];
+            
+            groups.forEach(group => {
+                const groupStudents = students.filter(student => student.group === group);
+                const paidAmount = groupStudents.reduce((sum, student) => {
+                    return sum + student.payments.reduce((sum, payment) => sum + payment.amount, 0);
+                }, 0);
+                
+                const totalPossible = groupStudents.reduce((sum, student) => sum + student.totalFee, 0);
+                const paidPercentage = totalPossible > 0 ? Math.round((paidAmount / totalPossible) * 100) : 0;
+                
+                document.getElementById(`${group.toLowerCase()}-students`).textContent = groupStudents.length;
+                document.getElementById(`${group.toLowerCase()}-paid`).textContent = paidPercentage + '%';
+            });
+        }
+
+        // Navigation functions
+        function showGroups(year) {
+            currentYear = year;
+            document.getElementById('dashboardContent').style.display = 'none';
+            document.getElementById('studentManagementContent').style.display = 'none';
+            document.getElementById('groupsContent').style.display = 'block';
+            document.getElementById('groupsTitle').textContent = `${year} - Select Group`;
+            document.getElementById('pageTitle').textContent = `${year} Groups`;
+            
+            // Update group stats
+            updateGroupStats();
+        }
+
+        function showStudentManagement(group) {
+            currentGroup = group;
+            document.getElementById('dashboardContent').style.display = 'none';
+            document.getElementById('groupsContent').style.display = 'none';
+            document.getElementById('studentManagementContent').style.display = 'block';
+            document.getElementById('managementTitle').textContent = `${currentYear} - ${group} Students`;
+            document.getElementById('pageTitle').textContent = `${group} Student Management`;
+            
+            // Filter students by group and load into table
+            const filteredStudents = students.filter(student => student.group === group);
+            loadStudentsIntoTable(filteredStudents);
+        }
+
+        function backToDashboard() {
+            document.getElementById('dashboardContent').style.display = 'block';
+            document.getElementById('groupsContent').style.display = 'none';
+            document.getElementById('studentManagementContent').style.display = 'none';
+            document.getElementById('pageTitle').textContent = 'Dashboard';
+        }
+
+        function backToGroups() {
+            document.getElementById('dashboardContent').style.display = 'none';
+            document.getElementById('groupsContent').style.display = 'block';
+            document.getElementById('studentManagementContent').style.display = 'none';
+            document.getElementById('pageTitle').textContent = `${currentYear} Groups`;
+        }
+
+        // Student table functions
+        function loadStudentsIntoTable(students) {
+            const tableBody = document.getElementById('studentTableBody');
+            tableBody.innerHTML = '';
+            
+            students.forEach(student => {
+                const paidAmount = student.payments.reduce((sum, payment) => sum + payment.amount, 0);
+                const balance = student.totalFee - paidAmount;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student.name}</td>
+                    <td>${student.admissionNo}</td>
+                    <td>${student.section}</td>
+                    <td>${student.sem}</td>
+                    <td>₹${student.totalFee.toLocaleString()}</td>
+                    <td>₹${paidAmount.toLocaleString()}</td>
+                    <td>₹${balance.toLocaleString()}</td>
+                    <td>
+                        <span class="status-badge ${student.paymentStatus === 'success' ? 'status-success' : 'status-pending'}">
+                            ${student.paymentStatus === 'success' ? 'Paid' : 'Pending'}
+                        </span>
+                    </td>
+                    <td>
+                        <i class="fas fa-edit edit-icon action-icon" onclick="editStudent(${student.id})"></i>
+                        <i class="fas fa-trash delete-icon action-icon" onclick="deleteStudent(${student.id})"></i>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Modal functions
+        function openAddStudentModal() {
+            document.getElementById('group').value = currentGroup;
+            document.getElementById('totalFee').value = courseFees[currentGroup];
+            document.getElementById('paymentHistoryContainer').style.display = 'none';
+            document.getElementById('addStudentModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('addStudentModal').classList.remove('show');
+            document.getElementById('editStudentModal').classList.remove('show');
+        }
+
+        function editStudent(id) {
+            const student = students.find(s => s.id === id);
+            if (!student) return;
+            
+            currentEditId = id;
+            
+            // Fill the edit form with student data
+            document.getElementById('editStudentId').value = student.id;
+            document.getElementById('editStudentName').value = student.name;
+            document.getElementById('editAdmissionNo').value = student.admissionNo;
+            document.getElementById('editSection').value = student.section;
+            document.getElementById('editGroup').value = student.group;
+            document.getElementById('editSemester').value = student.sem;
+            document.getElementById('editAddress').value = student.address;
+            document.getElementById('editTotalFee').value = student.totalFee;
+            
+            const paidAmount = student.payments.reduce((sum, payment) => sum + payment.amount, 0);
+            document.getElementById('editAmountPaid').value = paidAmount;
+            
+            // Set the latest payment details
+            if (student.payments.length > 0) {
+                const latestPayment = student.payments[student.payments.length - 1];
+                document.getElementById('editPaymentDate').value = latestPayment.date;
+                document.getElementById('editReceiptNo').value = latestPayment.receiptNo;
+            }
+            
+            document.getElementById('editPaymentStatus').value = student.paymentStatus;
+            
+            // Load payment history
+            loadPaymentHistory(student.payments, 'editPaymentHistoryList');
+            
+            document.getElementById('editStudentModal').classList.add('show');
+        }
+
+        function loadPaymentHistory(payments, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if (payments.length === 0) {
+                container.innerHTML = '<p>No payment history found</p>';
+                return;
+            }
+            
+            payments.forEach((payment, index) => {
+                const paymentItem = document.createElement('div');
+                paymentItem.className = 'payment-item';
+                paymentItem.innerHTML = `
+                    <div>
+                        <div>Payment #${index + 1}</div>
+                        <div class="payment-date">${payment.date}</div>
+                    </div>
+                    <div class="payment-amount">₹${payment.amount.toLocaleString()} (${payment.receiptNo})</div>
+                `;
+                container.appendChild(paymentItem);
+            });
+        }
+
+        // CRUD operations
+        function saveStudent() {
+            // Validate form
+            const form = document.getElementById('studentForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Create new student object
+            const amountPaid = parseFloat(document.getElementById('amountPaid').value) || 0;
+            const paymentStatus = amountPaid >= courseFees[currentGroup] ? 'success' : document.getElementById('paymentStatus').value;
+            
+            const newStudent = {
+                id: students.length > 0 ? Math.max(...students.map(s => s.id)) + 1 : 1,
+                name: document.getElementById('studentName').value,
+                admissionNo: document.getElementById('admissionNo').value,
+                section: document.getElementById('section').value,
+                group: document.getElementById('group').value,
+                sem: document.getElementById('semester').value,
+                address: document.getElementById('address').value,
+                totalFee: courseFees[currentGroup],
+                payments: [],
+                paymentStatus: paymentStatus
+            };
+            
+            // Add payment if amount is greater than 0
+            if (amountPaid > 0) {
+                newStudent.payments.push({
+                    amount: amountPaid,
+                    date: document.getElementById('paymentDate').value,
+                    receiptNo: document.getElementById('receiptNo').value
+                });
+            }
+            
+            // Add to students array
+            students.push(newStudent);
+            
+            // Save to storage
+            saveDataToStorage();
+            
+            // Reload table
+            const filteredStudents = students.filter(student => student.group === currentGroup);
+            loadStudentsIntoTable(filteredStudents);
+            
+            // Close modal and reset form
+            closeModal();
+            form.reset();
+            
+            // Show success message
+            alert('Student added successfully!');
+        }
+
+        function addPayment() {
+            const amount = parseFloat(document.getElementById('additionalPayment').value) || 0;
+            const date = document.getElementById('additionalPaymentDate').value;
+            const receiptNo = document.getElementById('additionalPaymentReceipt').value;
+            
+            if (amount <= 0 || !date || !receiptNo) {
+                alert('Please fill all payment details correctly');
+                return;
+            }
+            
+            // Find student index
+            const index = students.findIndex(s => s.id === currentEditId);
+            if (index === -1) return;
+            
+            // Add new payment
+            students[index].payments.push({
+                amount: amount,
+                date: date,
+                receiptNo: receiptNo
+            });
+            
+            // Update total paid amount
+            const paidAmount = students[index].payments.reduce((sum, payment) => sum + payment.amount, 0);
+            document.getElementById('editAmountPaid').value = paidAmount;
+            
+            // Update payment status if fully paid
+            if (paidAmount >= students[index].totalFee) {
+                students[index].paymentStatus = 'success';
+                document.getElementById('editPaymentStatus').value = 'success';
+            }
+            
+            // Reload payment history
+            loadPaymentHistory(students[index].payments, 'editPaymentHistoryList');
+            
+            // Clear payment form
+            document.getElementById('additionalPayment').value = '';
+            document.getElementById('additionalPaymentDate').value = '';
+            document.getElementById('additionalPaymentReceipt').value = '';
+            
+            // Show success message
+            alert('Payment added successfully!');
+        }
+
+        function updateStudent() {
+            // Validate form
+            const form = document.getElementById('editStudentForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Find student index
+            const index = students.findIndex(s => s.id === currentEditId);
+            if (index === -1) return;
+            
+            // Update student object
+            students[index] = {
+                id: currentEditId,
+                name: document.getElementById('editStudentName').value,
+                admissionNo: document.getElementById('editAdmissionNo').value,
+                section: document.getElementById('editSection').value,
+                group: document.getElementById('editGroup').value,
+                sem: document.getElementById('editSemester').value,
+                address: document.getElementById('editAddress').value,
+                totalFee: courseFees[document.getElementById('editGroup').value],
+                payments: students[index].payments, // Keep existing payments
+                paymentStatus: document.getElementById('editPaymentStatus').value
+            };
+            
+            // Save to storage
+            saveDataToStorage();
+            
+            // Reload table
+            const filteredStudents = students.filter(student => student.group === currentGroup);
+            loadStudentsIntoTable(filteredStudents);
+            
+            // Close modal
+            closeModal();
+            
+            // Show success message
+            alert('Student updated successfully!');
+        }
+
+        function deleteStudent(id) {
+            if (confirm('Are you sure you want to delete this student?')) {
+                students = students.filter(student => student.id !== id);
+                
+                // Save to storage
+                saveDataToStorage();
+                
+                // Reload table
+                const filteredStudents = students.filter(student => student.group === currentGroup);
+                loadStudentsIntoTable(filteredStudents);
+                
+                // Show success message
+                alert('Student deleted successfully!');
+            }
+        }
+
+        // PDF and Print functions
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Add college logo and title
+            doc.addImage('https://via.placeholder.com/60', 'JPEG', 10, 10, 30, 30);
+            doc.setFontSize(20);
+            doc.setTextColor(40, 40, 40);
+            doc.text('Aditya Degree College', 50, 20);
+            doc.setFontSize(16);
+            doc.text(`${currentYear} - ${currentGroup} Student List`, 50, 30);
+            
+            // Add current date
+            const today = new Date();
+            doc.setFontSize(10);
+            doc.text(`Generated on: ${today.toLocaleDateString()}`, 160, 10);
+            
+            // Create table data
+            const tableData = [];
+            const filteredStudents = students.filter(student => student.group === currentGroup);
+            
+            // Add headers
+            tableData.push([
+                'Name', 
+                'Adm No', 
+                'Section', 
+                'Sem', 
+                'Total Fees', 
+                'Paid', 
+                'Balance', 
+                'Status'
+            ]);
+            
+            // Add student data
+            filteredStudents.forEach(student => {
+                const paidAmount = student.payments.reduce((sum, payment) => sum + payment.amount, 0);
+                const balance = student.totalFee - paidAmount;
+                
+                tableData.push([
+                    student.name,
+                    student.admissionNo,
+                    student.section,
+                    student.sem,
+                    '₹' + student.totalFee.toLocaleString(),
+                    '₹' + paidAmount.toLocaleString(),
+                    '₹' + balance.toLocaleString(),
+                    student.paymentStatus === 'success' ? 'Paid' : 'Pending'
+                ]);
+            });
+            
+            // Add table to PDF
+            doc.autoTable({
+                head: [tableData[0]],
+                body: tableData.slice(1),
+                startY: 40,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [41, 128, 185],
+                    textColor: 255
+                },
+                alternateRowStyles: {
+                    fillColor: [240, 240, 240]
+                },
+                margin: { top: 40 }
+            });
+            
+            // Save the PDF
+            doc.save(`${currentGroup}_Students_${today.getFullYear()}.pdf`);
+        }
+
+        function printTable() {
+            window.print();
+        }
+
+        // Search functionality
+        document.querySelector('.search-input').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredStudents = students.filter(student => 
+                student.group === currentGroup && 
+                (
+                    student.name.toLowerCase().includes(searchTerm) ||
+                    student.admissionNo.toLowerCase().includes(searchTerm) ||
+                    student.section.toLowerCase().includes(searchTerm)
+                )
+            );
+            loadStudentsIntoTable(filteredStudents);
+        });
+    </script>
+</body>
+</html>
